@@ -1,6 +1,5 @@
 package controllers;
 
-import akka.Done;
 import com.fasterxml.jackson.databind.JsonNode;
 import models.Credentials;
 import play.cache.AsyncCacheApi;
@@ -11,8 +10,8 @@ import javax.inject.Inject;
 
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 
-import static play.mvc.Controller.request;
 import static play.mvc.Results.*;
 
 public class AuthController {
@@ -20,9 +19,12 @@ public class AuthController {
     private AsyncCacheApi cache;
 
     @Inject
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result login(AsyncCacheApi cache) {
-        JsonNode json = request().body().asJson();
+    public void StoreToCache(AsyncCacheApi cache) {
+        this.cache = cache;
+    }
+
+    public Result login(Http.Request request) {
+        JsonNode json = request.body().asJson();
         String username = json.findPath("username").textValue();
         String password = json.findPath("password").textValue();
         String validationResult = validate(username, password);
@@ -30,25 +32,24 @@ public class AuthController {
         if (validationResult != null) {
             return badRequest(validationResult);
         } else {
+            CompletionStage<Optional<Credentials>> stage = cache.getOptional("account-" + username);
             try {
-                CompletionStage<Optional<Credentials>> result = cache.getOptional("account");
-                if (result != null) {
-                    return ok("result.username");
-                } else {
-                    return ok("No in cache");
-                }
+                Optional<Credentials> result = stage.toCompletableFuture().get();
 
-            } catch (RuntimeException e) {
+                if (result.isPresent()) {
+                    Credentials creds = result.get();
+                    return ok(creds.username);
+                } else {
+                    return ok("Not found");
+                }
+            } catch (InterruptedException | ExecutionException e) {
                 return ok(e.getMessage());
             }
         }
-        // return ok("Created ");
     }
 
-    @Inject
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result register(AsyncCacheApi cache) {
-        JsonNode json = request().body().asJson();
+    public Result register(Http.Request request) {
+        JsonNode json = request.body().asJson();
         try {
             Credentials newUser = Json.fromJson(json, Credentials.class);
             cache.set("account-" + newUser.username, newUser);
