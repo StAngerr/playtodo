@@ -2,6 +2,10 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import models.Credentials;
+import modules.SecurityModule;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.jwt.config.signature.SecretSignatureConfiguration;
+import org.pac4j.jwt.profile.JwtGenerator;
 import play.cache.AsyncCacheApi;
 import play.libs.Json;
 import play.mvc.*;
@@ -34,14 +38,14 @@ public class AuthController {
         } else {
             CompletionStage<Optional<Credentials>> stage = cache.getOptional("account-" + username);
             try {
-                Optional<Credentials> result = stage.toCompletableFuture().get();
-
-                if (result.isPresent()) {
-                    Credentials creds = result.get();
-                    return ok(creds.username);
-                } else {
-                    return ok("Not found");
-                }
+                return stage
+                        .toCompletableFuture()
+                        .get()
+                        .map(creds -> {
+                            final String token = generateJwt(creds.password);
+                            return ok(token);
+                        })
+                        .orElse(ok("User not found"));
             } catch (InterruptedException | ExecutionException e) {
                 return ok(e.getMessage());
             }
@@ -57,6 +61,13 @@ public class AuthController {
             return badRequest(e.getMessage());
         }
         return ok("User created");
+    }
+
+    private String generateJwt(String password) {
+        final JwtGenerator generator = new JwtGenerator(new SecretSignatureConfiguration(SecurityModule.JWT_SALT));
+        String token;
+        token = generator.generate(new CommonProfile());
+        return token;
     }
 
     private String validate(String username, String password) {
