@@ -17,6 +17,8 @@ libraryDependencies ++= Seq(
   "org.pac4j" % "play-pac4j" % playPac4jVersion,
   "org.pac4j" % "pac4j-oidc" % pac4jVersion exclude("commons-io" , "commons-io"),
   "org.pac4j" % "pac4j-jwt" % pac4jVersion exclude("commons-io" , "commons-io"),
+  "org.pac4j" % "pac4j-http" % "3.7.0",
+  "be.objectify" %% "deadbolt-java" % "2.6.1"
 )
 //libraryDependencies += "be.objectify" %% "deadbolt-java" % "2.6.1"
 //libraryDependencies += "org.pac4j" %% "play-pac4j" % "7.0.1"

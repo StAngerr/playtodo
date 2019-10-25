@@ -1,5 +1,6 @@
 package controllers;
 
+import org.pac4j.play.java.Secure;
 import play.mvc.*;
 
 /**
@@ -16,6 +17,12 @@ public class HomeController extends Controller {
      */
     public Result index() {
         return ok(views.html.index.render());
+    }
+
+
+    @Secure(clients = "HeaderClient")
+    public Result test() {
+        return ok(" access granted");
     }
 
 }

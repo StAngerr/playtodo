@@ -1,9 +1,11 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.nimbusds.jwt.JWTClaimsSet;
 import models.Credentials;
 import modules.SecurityModule;
 import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.jwt.config.encryption.SecretEncryptionConfiguration;
 import org.pac4j.jwt.config.signature.SecretSignatureConfiguration;
 import org.pac4j.jwt.profile.JwtGenerator;
 import play.cache.AsyncCacheApi;
@@ -12,6 +14,8 @@ import play.mvc.*;
 
 import javax.inject.Inject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -64,6 +68,9 @@ public class AuthController {
     }
 
     private String generateJwt(String password) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("password", password);
+        // final JWTClaimsSet claimSet = new JWTClaimsSet(map);
         final JwtGenerator generator = new JwtGenerator(new SecretSignatureConfiguration(SecurityModule.JWT_SALT));
         String token;
         token = generator.generate(new CommonProfile());
