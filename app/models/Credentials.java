@@ -17,4 +17,9 @@ public class Credentials {
         this.password = password;
         this.confirmPassword = confirmPassword;
     }
+
+    @Override
+    public String toString() {
+        return "Username: " + this.username + " Password: " + this.password;
+    }
 }

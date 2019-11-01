@@ -26,7 +26,7 @@ public class SessionService {
         return instance;
     }
 
-    public Session createNewSession(Credentials credentials) {
+    public Session createNewSession() {
         String sessionId = UUID.randomUUID().toString();
         Session session = new Session(sessionId);
         try {
