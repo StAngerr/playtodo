@@ -3,21 +3,29 @@ package models;
 import models.dto.SessionJwtDTO;
 import net.minidev.json.JSONObject;
 
+import java.util.Date;
+
 public class Session {
     private String jwt;
 
     private String sessionId;
-    private String expiration = "expire test";
+
+    private String userId;
+    private long expiration;
     private User user;
 
     public Session() { }
 
-    public Session(String sessionId) {
+    public Session(String sessionId, String userId) {
         this.sessionId = sessionId;
+        this.userId = userId;
+        this.expiration = new Date().getTime();
     }
-    public Session(String jwt, String sessionId) {
-        this.jwt = jwt;
+
+    public Session(String sessionId, String userId, long expiration) {
         this.sessionId = sessionId;
+        this.userId = userId;
+        this.expiration = expiration;
     }
 
     public void setJwt(String jwt) {
@@ -25,14 +33,14 @@ public class Session {
     }
 
     public SessionJwtDTO getDataForJwt() {
-        return new SessionJwtDTO(this.sessionId);
+        return new SessionJwtDTO(this.sessionId, this.userId, expiration);
     }
 
     public String getSessionId() {
         return sessionId;
     }
 
-    public String getExpiration() {
+    public long getExpiration() {
         return expiration;
     }
 
@@ -55,5 +63,10 @@ public class Session {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+
+    public String getUserId() {
+        return userId;
     }
 }

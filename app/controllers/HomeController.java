@@ -16,13 +16,6 @@ public class HomeController extends Controller {
      * <code>GET</code> request with a path of <code>/</code>.
      */
     public Result index() {
-        return ok(views.html.index.render());
+        return ok("views.html.index.render()");
     }
-
-
-    @Secure(clients = "HeaderClient")
-    public Result test() {
-        return ok(" access granted");
-    }
-
 }

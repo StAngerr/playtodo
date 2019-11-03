@@ -1,6 +1,7 @@
 package controllers;
 
 import com.google.inject.Inject;
+import enums.UserRoles;
 import models.Credentials;
 import models.Session;
 import models.User;
@@ -11,6 +12,8 @@ import services.UserService;
 import utils.HttpHelper;
 import utils.JwtHelper;
 import utils.ValidationHelper;
+
+import java.util.Date;
 
 import static play.mvc.Results.*;
 
@@ -28,13 +31,13 @@ public class AuthController {
         this.userService = UserService.getInstance();
     }
 
+    // returns jwt + current user
     public Result login(Http.Request request) {
-        Credentials loginCredentials = httpHelper.getLoginData(request);
-        System.out.println(loginCredentials.toString());
         try {
+            Credentials loginCredentials = httpHelper.getLoginData(request);
             ValidationHelper.validateLoginCredentials(loginCredentials);
             User user = userService.getAndValidateUser(loginCredentials);
-            Session session = sessionService.createNewSession();
+            Session session = sessionService.createNewSession(user.id);
             session.setUser(user);
             return ok(session.asJson().toJSONString());
         } catch (Exception e) {
@@ -42,12 +45,15 @@ public class AuthController {
         }
     }
 
+    // returns jwt
+    // Todo return user
     public Result register(Http.Request request) {
-        Credentials registrationCredentials = httpHelper.getRegistrationData(request);
         try {
+            Credentials registrationCredentials = httpHelper.getRegistrationData(request);
             ValidationHelper.validateRegistrationCredentials(registrationCredentials);
-            Session session = sessionService.createNewSession();
-            userService.saveUser(new User(registrationCredentials.username, registrationCredentials.password));
+            User user = new User(registrationCredentials.username, registrationCredentials.password, UserRoles.REGULAR_USER);
+            Session session = sessionService.createNewSession(user.id);
+            userService.saveUser(user);
             return ok(session.getJwt());
         } catch (Exception e) {
             return badRequest(e.getMessage());
