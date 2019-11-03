@@ -49,6 +49,10 @@ public class SessionService {
         if (header.isPresent()) {
             String token = header.get();
             JWSObject obj =  jwtHelper.parse(token);
+            if (obj == null || obj.getPayload().toJSONObject() == null) {
+                throw new Exception("Invalid token.");
+            }
+
             SessionJwtDTO sessionDTO = parseSessionDto(obj.getPayload().toJSONObject());
 
             if (!cacheManager.isSessionExists(sessionDTO.sessionId)) {

@@ -105,6 +105,7 @@ public class UserService {
         }
     }
 
+    // move to  separate file
     private void saveToFile(JSONArray users) throws IOException {
         createIfNoFile();
         FileWriter file = null;
@@ -114,6 +115,7 @@ public class UserService {
         file.close();
     }
 
+    // move to  separate file
     private void createIfNoFile() throws IOException {
         File file = new File(filePath);
         if (!file.exists()) {
@@ -122,7 +124,7 @@ public class UserService {
         }
     }
 
-    private List<User> getAllUsers() throws IOException, ParseException {
+    public List<User> getAllUsers() throws IOException, ParseException {
         createIfNoFile();
         JSONParser parser = new JSONParser();
         Gson gson = new Gson();
@@ -134,7 +136,7 @@ public class UserService {
         return users;
     }
 
-    private JSONArray usersToJSON(List<User> users) {
+    public JSONArray usersToJSON(List<User> users) {
         JSONArray result = new JSONArray();
         for (User user : users) {
             result.add(user.asJson());

@@ -25,19 +25,6 @@ public class CacheManager {
         cache.set(sessionPrefix + session.getSessionId(), session.getExpiration());
     }
 
-    public String getSessionItem(String sessionId) {
-        try {
-             Object test = cache.getOptional(sessionPrefix + sessionId)
-                    .toCompletableFuture()
-                    .get()
-                     .map(val -> val)
-                    .get();
-            return "TEST";
-        } catch (InterruptedException | ExecutionException e) {
-            return null;
-        }
-    }
-
     public boolean isSessionExists(String sessionId) throws ExecutionException, InterruptedException {
         return cache.getOptional(sessionPrefix + sessionId)
                 .toCompletableFuture().get().isPresent();
@@ -45,13 +32,5 @@ public class CacheManager {
 
     public void removeSessionItem(String sessionId) {
         cache.remove(sessionPrefix + sessionId);
-    }
-
-    public void setItem() {
-
-    }
-
-    public void getItem() {
-
     }
 }

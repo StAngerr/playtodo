@@ -13,8 +13,6 @@ import utils.HttpHelper;
 import utils.JwtHelper;
 import utils.ValidationHelper;
 
-import java.util.Date;
-
 import static play.mvc.Results.*;
 
 public class AuthController {
