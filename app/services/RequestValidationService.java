@@ -5,8 +5,15 @@ import models.Session;
 import models.User;
 import play.cache.AsyncCacheApi;
 import play.mvc.Http;
+import utils.errorHandler.InvalidSession;
+import utils.errorHandler.InvalidToken;
+import utils.errorHandler.NoPermission;
+import utils.errorHandler.SessionExpired;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class RequestValidationService {
     private static RequestValidationService instance;
@@ -25,7 +32,7 @@ public class RequestValidationService {
         return instance;
     }
 
-    public Session validateSessionAndUser(Http.Request request) throws Exception {
+    public Session validateSessionAndUser(Http.Request request) throws SessionExpired, ExecutionException, InvalidToken, ParseException, InterruptedException, org.json.simple.parser.ParseException, InvalidSession, IOException {
         Session session = sessionService.validateSession(request);
         User user =  getAndValidateUser(session.getUserId());
 
@@ -33,7 +40,7 @@ public class RequestValidationService {
         return session;
     }
 
-    public Session validateSessionAndUser(Http.Request request, List<UserRoles> roles) throws Exception {
+    public Session validateSessionAndUser(Http.Request request, List<UserRoles> roles) throws SessionExpired, ExecutionException, InvalidToken, ParseException, InterruptedException, NoPermission, IOException, org.json.simple.parser.ParseException {
         Session session = sessionService.validateSession(request);
         User user = userService.getUserById(session.getUserId());
         userService.validatePermissions(user, roles);
@@ -41,10 +48,10 @@ public class RequestValidationService {
         return session;
     }
 
-    private User getAndValidateUser(String userId) throws Exception {
+    private User getAndValidateUser(String userId) throws InvalidSession, IOException, org.json.simple.parser.ParseException {
         User user = userService.getUserById(userId);
         if (user == null) {
-            throw new Exception("Invalid session.");
+            throw new InvalidSession();
         }
         return user;
     }

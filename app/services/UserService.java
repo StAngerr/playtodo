@@ -8,6 +8,10 @@ import models.dto.UserDTO;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import utils.errorHandler.InvalidCredentials;
+import utils.errorHandler.NoPermission;
+import utils.errorHandler.UserExist;
+import utils.errorHandler.UserNotFound;
 
 import java.io.File;
 import java.io.FileReader;
@@ -29,29 +33,24 @@ public class UserService {
         return instance;
     }
 
-    public User getAndValidateUser(Credentials loginData) throws IOException, ParseException {
+    public User getAndValidateUser(Credentials loginData) throws IOException, ParseException, UserNotFound, InvalidCredentials {
         User user = getUser(loginData.username);
         if (user == null) {
-            return null;
+            throw new UserNotFound();
         }
 
         if (!user.password.equals(loginData.password)) {
-            return null;
+            throw new InvalidCredentials();
         }
 
         return user;
     }
 
-    public void saveUser(User user) throws Exception {
-        try {
-            isUserExists(user);
-            List<User> allUsers = getAllUsers();
-            allUsers.add(user);
-            saveToFile(usersToJSON(allUsers));
-        } catch (IOException e) {
-            System.out.println(e);
-            throw new Exception("Failed to create user.");
-        }
+    public void saveUser(User user) throws ParseException, UserExist, IOException {
+        isUserExists(user);
+        List<User> allUsers = getAllUsers();
+        allUsers.add(user);
+        saveToFile(usersToJSON(allUsers));
     }
 
     public User getUser(User user) throws IOException, ParseException {
@@ -84,11 +83,11 @@ public class UserService {
         return null;
     }
 
-    public void isUserExists(User user) throws Exception {
+    public void isUserExists(User user) throws IOException, ParseException, UserExist {
         List<User> list = getAllUsers();
         for (User item : list) {
             if (item.username.equals(user.username)) {
-                throw new Exception("User exist.");
+                throw new UserExist();
             }
         }
     }
@@ -98,10 +97,10 @@ public class UserService {
     }
 
     /// As if this a good way of building methods. return boolean or throw Exception ???
-    public void validatePermissions(User user, List<UserRoles> roles) throws Exception {
+    public void validatePermissions(User user, List<UserRoles> roles) throws NoPermission {
         boolean result = roles.stream().anyMatch(role -> role == user.role);
         if (!result) {
-            throw new Exception("User have no permissions for this action.");
+            throw new NoPermission();
         }
     }
 

@@ -6,6 +6,7 @@ import models.Credentials;
 import models.User;
 import org.apache.commons.lang3.RandomStringUtils;
 import play.mvc.Http;
+import utils.errorHandler.InvalidRequestData;
 
 public class HttpHelper {
     private static HttpHelper instance;
@@ -19,20 +20,20 @@ public class HttpHelper {
         return instance;
     }
 
-    public Credentials getLoginData(Http.Request request) throws Exception {
+    public Credentials getLoginData(Http.Request request) throws InvalidRequestData {
         JsonNode json = request.body().asJson();
         if (json == null) {
-            throw new Exception("No request body or bad data format.");
+            throw new InvalidRequestData();
         }
         String username = json.findPath("username").textValue();
         String password = json.findPath("password").textValue();
         return new Credentials(username, password);
     }
 
-    public Credentials getRegistrationData(Http.Request request)  throws Exception {
+    public Credentials getRegistrationData(Http.Request request) throws InvalidRequestData {
         JsonNode json = request.body().asJson();
         if (json == null) {
-            throw new Exception("No request body or bad data format.");
+            throw new InvalidRequestData();
         }
         String username = json.findPath("username").textValue();
         String password = json.findPath("password").textValue();
@@ -41,10 +42,10 @@ public class HttpHelper {
     }
 
     // move user creation out of here
-    public User getUserFromRequest(Http.Request request) throws Exception {
+    public User getUserFromRequest(Http.Request request) throws InvalidRequestData {
         JsonNode json = request.body().asJson();
         if (json == null) {
-            throw new Exception("No request body or bad data format.");
+            throw new InvalidRequestData();
         }
 
         String username = json.findPath("username").textValue();

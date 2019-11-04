@@ -9,10 +9,14 @@ import play.cache.AsyncCacheApi;
 import play.mvc.Http;
 import utils.CacheManager;
 import utils.JwtHelper;
+import utils.errorHandler.InvalidToken;
+import utils.errorHandler.SessionExpired;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class SessionService {
     private static SessionService instance;
@@ -44,24 +48,24 @@ public class SessionService {
         return session;
     }
 
-    public Session validateSession(Http.Request request) throws Exception {
+    public Session validateSession(Http.Request request) throws SessionExpired, InvalidToken, ParseException, ExecutionException, InterruptedException {
         Optional<String> header = request.getHeaders().get("Authorization");
         if (header.isPresent()) {
             String token = header.get();
             JWSObject obj =  jwtHelper.parse(token);
             if (obj == null || obj.getPayload().toJSONObject() == null) {
-                throw new Exception("Invalid token.");
+                throw new InvalidToken();
             }
 
             SessionJwtDTO sessionDTO = parseSessionDto(obj.getPayload().toJSONObject());
 
             if (!cacheManager.isSessionExists(sessionDTO.sessionId)) {
-                throw new Exception("Invalid token.");
+                throw new InvalidToken();
             }
 
             if (isExpired(sessionDTO.expiration)) {
                 cacheManager.removeSessionItem(sessionDTO.sessionId);
-                throw new Exception("Session expired.");
+                throw new SessionExpired();
             }
 
             return new Session(sessionDTO.sessionId, sessionDTO.userId, sessionDTO.expiration);
