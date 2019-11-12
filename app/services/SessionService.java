@@ -3,6 +3,7 @@ package services;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
 import models.Session;
+import models.User;
 import models.dto.SessionJwtDTO;
 import net.minidev.json.JSONObject;
 import play.cache.AsyncCacheApi;
@@ -35,12 +36,13 @@ public class SessionService {
         return instance;
     }
 
-    public Session createNewSession(String userId) {
+    public Session createNewSession(User user) {
         String sessionId = UUID.randomUUID().toString();
-        Session session = new Session(sessionId, userId);
+        Session session = new Session(sessionId, user.id);
         try {
             String token = jwtHelper.generateJwt(session.getDataForJwt());
             session.setJwt(token);
+            session.setUser(user);
             cacheManager.setSessionItem(session);
         } catch (JOSEException | IllegalAccessException e) {
             System.out.println(e);

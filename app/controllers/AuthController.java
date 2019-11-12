@@ -6,6 +6,8 @@ import models.Credentials;
 import models.Session;
 import models.User;
 import org.json.simple.parser.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.cache.AsyncCacheApi;
 import play.mvc.*;
 import services.SessionService;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import static play.mvc.Results.*;
 
 public class AuthController {
+    final Logger log = LoggerFactory.getLogger(this.getClass());
     private HttpHelper httpHelper;
     private JwtHelper jwtHelper;
     private SessionService sessionService;
@@ -39,12 +42,12 @@ public class AuthController {
             Credentials loginCredentials = httpHelper.getLoginData(request);
             ValidationHelper.validateLoginCredentials(loginCredentials);
             User user = userService.getAndValidateUser(loginCredentials);
-            Session session = sessionService.createNewSession(user.id);
-            session.setUser(user);
+            Session session = sessionService.createNewSession(user);
             return ok(session.asJson().toJSONString());
         } catch (UserNotFound |InvalidRequestData | InvalidCredentials | NoCredentials e) {
             return badRequest(e.getMessage());
         } catch (IOException | ParseException e) {
+            log.error("Login: " + e.getMessage());
             return badRequest(new InternalError().getMessage());
         }
     }
@@ -56,10 +59,11 @@ public class AuthController {
             Credentials registrationCredentials = httpHelper.getRegistrationData(request);
             ValidationHelper.validateRegistrationCredentials(registrationCredentials);
             User user = new User(registrationCredentials.username, registrationCredentials.password, UserRoles.REGULAR_USER);
-            Session session = sessionService.createNewSession(user.id);
+            Session session = sessionService.createNewSession(user);
             userService.saveUser(user);
             return ok(session.getJwt());
         } catch (InvalidRequestData | InvalidCredentials | UserExist | NoCredentials | PasswordMatch e) {
+            log.error("Register: " + e.getMessage());
             return badRequest(e.getMessage());
         } catch (IOException | ParseException e) {
             return badRequest(new InternalError().getMessage());

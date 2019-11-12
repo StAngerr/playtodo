@@ -5,10 +5,7 @@ import models.Session;
 import models.User;
 import play.cache.AsyncCacheApi;
 import play.mvc.Http;
-import utils.errorHandler.InvalidSession;
-import utils.errorHandler.InvalidToken;
-import utils.errorHandler.NoPermission;
-import utils.errorHandler.SessionExpired;
+import utils.errorHandler.*;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -32,27 +29,42 @@ public class RequestValidationService {
         return instance;
     }
 
-    public Session validateSessionAndUser(Http.Request request) throws SessionExpired, ExecutionException, InvalidToken, ParseException, InterruptedException, org.json.simple.parser.ParseException, InvalidSession, IOException {
-        Session session = sessionService.validateSession(request);
+    public Session validateSessionAndUser(Http.Request request) throws SessionExpired, InvalidToken, InvalidSession {
+        Session session = null;
+        try {
+            session = sessionService.validateSession(request);
+        } catch (ParseException | ExecutionException | InterruptedException e) {
+            throw new InvalidSession();
+        }
         User user =  getAndValidateUser(session.getUserId());
 
         session.setUser(user);
         return session;
     }
 
-    public Session validateSessionAndUser(Http.Request request, List<UserRoles> roles) throws SessionExpired, ExecutionException, InvalidToken, ParseException, InterruptedException, NoPermission, IOException, org.json.simple.parser.ParseException {
-        Session session = sessionService.validateSession(request);
-        User user = userService.getUserById(session.getUserId());
-        userService.validatePermissions(user, roles);
-        session.setUser(user);
-        return session;
+    public Session validateSessionAndUser(Http.Request request, List<UserRoles> roles) throws SessionExpired, InvalidToken, NoPermission, UserNotFound, InvalidSession {
+        try {
+            Session session = sessionService.validateSession(request);
+            User user = userService.getUserById(session.getUserId());
+            userService.validatePermissions(user, roles);
+            session.setUser(user);
+            return session;
+        } catch ( ExecutionException | InterruptedException | ParseException | org.json.simple.parser.ParseException e) {
+            throw new InvalidSession();
+        } catch (IOException e) {
+            throw new UserNotFound();
+        }
     }
 
-    private User getAndValidateUser(String userId) throws InvalidSession, IOException, org.json.simple.parser.ParseException {
-        User user = userService.getUserById(userId);
-        if (user == null) {
+    private User getAndValidateUser(String userId) throws InvalidSession {
+        try {
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                throw new InvalidSession();
+            }
+            return user;
+        } catch (IOException | org.json.simple.parser.ParseException e) {
             throw new InvalidSession();
         }
-        return user;
     }
 }

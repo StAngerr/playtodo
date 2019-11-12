@@ -33,8 +33,13 @@ public class UserService {
         return instance;
     }
 
-    public User getAndValidateUser(Credentials loginData) throws IOException, ParseException, UserNotFound, InvalidCredentials {
-        User user = getUser(loginData.username);
+    public User getAndValidateUser(Credentials loginData) throws UserNotFound, InvalidCredentials {
+        User user = null;
+        try {
+            user = getUser(loginData.username);
+        } catch (IOException | ParseException e) {
+            throw new UserNotFound();
+        }
         if (user == null) {
             throw new UserNotFound();
         }
@@ -46,11 +51,16 @@ public class UserService {
         return user;
     }
 
-    public void saveUser(User user) throws ParseException, UserExist, IOException {
-        isUserExists(user);
-        List<User> allUsers = getAllUsers();
-        allUsers.add(user);
-        saveToFile(usersToJSON(allUsers));
+    public void saveUser(User user) throws UserExist {
+        try {
+            isUserExists(user);
+            List<User> allUsers = getAllUsers();
+            allUsers.add(user);
+            saveToFile(usersToJSON(allUsers));
+        } catch (ParseException | IOException e) {
+            throw new UserExist();
+        }
+
     }
 
     public User getUser(User user) throws IOException, ParseException {
