@@ -23,7 +23,7 @@ public class ErrorHandler extends DefaultHttpErrorHandler {
         super(configuration, environment, sourceMapper, routes);
     }
 
-    protected CompletionStage<Result> onDevServerError(Http.RequestHeader var1, UsefulException var2) {
-        return CompletableFuture.completedFuture(Results.status(500, views.html.errorPage.render()));
-    }
+//    protected CompletionStage<Result> onDevServerError(Http.RequestHeader var1, UsefulException var2) {
+//        return CompletableFuture.completedFuture(Results.status(500, views.html.test.render()));
+//    }
 }

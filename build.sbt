@@ -24,3 +24,4 @@ libraryDependencies ++= Seq(
 )
 //libraryDependencies += "be.objectify" %% "deadbolt-java" % "2.6.1"
 //libraryDependencies += "org.pac4j" %% "play-pac4j" % "7.0.1"
+

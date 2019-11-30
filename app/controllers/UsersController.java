@@ -12,9 +12,9 @@ import services.SessionService;
 import services.UserService;
 import utils.HttpHelper;
 import utils.JsonHelper;
+import utils.collections.MyList;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static play.mvc.Results.badRequest;
 import static play.mvc.Results.ok;
@@ -49,7 +49,7 @@ public class UsersController {
     public Result getAllUsers(Http.Request request) {
         try {
             this.requestValidationService.validateSessionAndUser(request);
-            List<User> allUsers = userService.getAllUsers();
+            MyList<User> allUsers = userService.getAllUsers();
             allUsers.removeIf(user -> user.role == UserRoles.ADMIN);
             return ok(userService.usersToJSON(allUsers).toJSONString());
         } catch (Exception e) {

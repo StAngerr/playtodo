@@ -5,7 +5,6 @@ import enums.UserRoles;
 import models.Credentials;
 import models.Session;
 import models.User;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.cache.AsyncCacheApi;
@@ -16,8 +15,6 @@ import utils.HttpHelper;
 import utils.JwtHelper;
 import utils.ValidationHelper;
 import utils.errorHandler.*;
-
-import java.io.IOException;
 
 import static play.mvc.Results.*;
 
@@ -46,9 +43,6 @@ public class AuthController {
             return ok(session.asJson().toJSONString());
         } catch (UserNotFound |InvalidRequestData | InvalidCredentials | NoCredentials e) {
             return badRequest(e.getMessage());
-        } catch (IOException | ParseException e) {
-            log.error("Login: " + e.getMessage());
-            return badRequest(new InternalError().getMessage());
         }
     }
 
@@ -65,8 +59,6 @@ public class AuthController {
         } catch (InvalidRequestData | InvalidCredentials | UserExist | NoCredentials | PasswordMatch e) {
             log.error("Register: " + e.getMessage());
             return badRequest(e.getMessage());
-        } catch (IOException | ParseException e) {
-            return badRequest(new InternalError().getMessage());
         }
     }
 }

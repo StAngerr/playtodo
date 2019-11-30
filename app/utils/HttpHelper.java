@@ -50,12 +50,13 @@ public class HttpHelper {
 
         String username = json.findPath("username").textValue();
         String email = json.findPath("email").textValue();
+        String name = json.findPath("name").textValue();
         String age = json.findPath("age").textValue();
         String role = json.findPath("role").textValue();
         String password = json.findPath("password").textValue();
         if (password == null) {
-            password =  RandomStringUtils.random(15);
+            password =  RandomStringUtils.randomAlphanumeric(15);
         }
-        return new User(username, password, email, Integer.parseInt(age), UserRoles.valueOf(role));
+        return new User(username, password, email, Integer.parseInt(age), role != null ? UserRoles.valueOf(role) : UserRoles.REGULAR_USER, name);
     }
 }

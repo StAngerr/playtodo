@@ -8,6 +8,7 @@ import models.dto.UserDTO;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import utils.collections.MyList;
 import utils.errorHandler.InvalidCredentials;
 import utils.errorHandler.NoPermission;
 import utils.errorHandler.UserExist;
@@ -17,8 +18,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class UserService {
     private static UserService instance;
@@ -54,7 +55,7 @@ public class UserService {
     public void saveUser(User user) throws UserExist {
         try {
             isUserExists(user);
-            List<User> allUsers = getAllUsers();
+            MyList<User> allUsers = getAllUsers();
             allUsers.add(user);
             saveToFile(usersToJSON(allUsers));
         } catch (ParseException | IOException e) {
@@ -63,42 +64,29 @@ public class UserService {
 
     }
 
-    public User getUser(User user) throws IOException, ParseException {
-        List<User> list = getAllUsers();
-        for (User item : list) {
-            if (item.username.equals(user.username)) {
-                return item;
-            }
-        }
-        return null;
+    public User getUser(User userData) throws IOException, ParseException {
+        MyList<User> list = getAllUsers();
+        Optional<User> userOptional = list.getIf((User user) -> user.username.equals(userData.username));
+        return userOptional.orElse(null);
     }
 
     public User getUser(String username) throws IOException, ParseException {
-        List<User> list = getAllUsers();
-        for (User item : list) {
-            if (item.username.equals(username)) {
-                return item;
-            }
-        }
-        return null;
+        MyList<User> list = getAllUsers();
+        Optional<User> userOptional = list.getIf((User user) -> user != null && user.username.equals(username));
+        return userOptional.orElse(null);
     }
 
     public User getUserById(String userId) throws IOException, ParseException {
-        List<User> list = getAllUsers();
-        for (User item : list) {
-            if (item.id.equals(userId)) {
-                return item;
-            }
-        }
-        return null;
+        MyList<User> list = getAllUsers();
+        Optional<User> userOptional = list.getIf((User user) -> user != null && user.id.equals(userId));
+        return userOptional.orElse(null);
     }
 
     public void isUserExists(User user) throws IOException, ParseException, UserExist {
-        List<User> list = getAllUsers();
-        for (User item : list) {
-            if (item.username.equals(user.username)) {
-                throw new UserExist();
-            }
+        MyList<User> list = getAllUsers();
+        Optional<User> userOptional = list.getIf((User u) -> u != null && u.username.equals(user.username));
+        if (userOptional.isPresent()) {
+            throw new UserExist();
         }
     }
 
@@ -133,19 +121,21 @@ public class UserService {
         }
     }
 
-    public List<User> getAllUsers() throws IOException, ParseException {
+    public MyList<User> getAllUsers() throws IOException, ParseException {
         createIfNoFile();
         JSONParser parser = new JSONParser();
         Gson gson = new Gson();
         JSONArray  usersJson = (JSONArray) parser.parse(new FileReader(filePath));
-        List<User> users = new ArrayList<>();
+        MyList<User> users = new MyList<>();
         for (Object item : usersJson) {
-            users.add(gson.fromJson(item.toString(), User.class));
+            String asString = item.toString();
+            User asUser = gson.fromJson(asString, User.class);
+            users.add(asUser);
         }
         return users;
     }
 
-    public JSONArray usersToJSON(List<User> users) {
+    public JSONArray usersToJSON(MyList<User> users) {
         JSONArray result = new JSONArray();
         for (User user : users) {
             result.add(user.asJson());

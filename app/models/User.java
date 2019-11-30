@@ -23,13 +23,14 @@ public class User {
         this.id = UUID.randomUUID().toString();
     }
 
-    public User(String username, String password, String email, int age, UserRoles role) {
+    public User(String username, String password, String email, int age, UserRoles role, String name) {
         this.username = username;
         this.password = password;
         this.role = role;
         this.email = email;
         this.age = age;
         this.id = UUID.randomUUID().toString();
+        this.name = name;
     }
 
     public JSONObject asJson() {
