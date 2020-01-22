@@ -4,17 +4,24 @@ import com.google.inject.Inject;
 import enums.UserRoles;
 
 import models.User;
+import play.api.libs.Files;
 import play.cache.AsyncCacheApi;
 import play.mvc.Http;
 import play.mvc.Result;
 import services.RequestValidationService;
 import services.SessionService;
 import services.UserService;
+import utils.FileManager;
 import utils.HttpHelper;
 import utils.JsonHelper;
 import utils.collections.MyList;
+import utils.errorHandler.InvalidSession;
+import utils.errorHandler.InvalidToken;
+import utils.errorHandler.SessionExpired;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static play.mvc.Results.badRequest;
 import static play.mvc.Results.ok;
@@ -72,5 +79,26 @@ public class UsersController {
 
     public Result deleteUser() {
         return ok("delete");
+    }
+
+    public Result getUserIcon(Http.Request request) {
+        return ok("icon");
+    }
+
+    public Result saveUserIcon(Http.Request request) {
+//        try {
+//            this.requestValidationService.validateSessionAndUser(request);
+//        } catch (Exception e) {
+//            return badRequest(e.getMessage());
+//        }
+        // File file = request.body().asRaw().asFile();
+        Http.MultipartFormData<Files.TemporaryFile> body = request.body().asMultipartFormData();
+        Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = body.getFile("picture");
+        String fileName = UUID.randomUUID().toString() + "_" + picture.getFilename();
+        File newFile = FileManager.createFile("\\assets\\" + fileName);
+        if (newFile != null) {
+            picture.getRef().moveFileTo(newFile, true);
+        }
+        return ok("File uploaded");
     }
 }

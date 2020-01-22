@@ -13,6 +13,7 @@ public class User {
     public  String email;
     public  String password;
     public UserRoles role;
+    private UserIcon icon;
 
     private User() {}
 
@@ -43,5 +44,13 @@ public class User {
         json.put("email", this.email);
         json.put("role", this.role.name());
         return json;
+    }
+
+    public UserIcon getIcon() {
+        return icon;
+    }
+
+    public void setIcon(UserIcon icon) {
+        this.icon = icon;
     }
 }

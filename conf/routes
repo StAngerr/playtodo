@@ -13,3 +13,5 @@ POST    /register                   controllers.AuthController.register(request:
 GET     /users/:id                  controllers.UsersController.getUserById(request: Request, id: String)
 GET     /users                      controllers.UsersController.getAllUsers(request: Request)
 POST    /users                      controllers.UsersController.createUser(request: Request)
+GET     /users                      controllers.UsersController.getUserIcon(request: Request)
+POST    /users/icon                 controllers.UsersController.saveUserIcon(request: Request)
