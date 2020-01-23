@@ -82,6 +82,13 @@ public class UserService {
         return userOptional.orElse(null);
     }
 
+    public User updateUser(User user) {
+        MyList<User> allUsers = getAllUsers();
+        allUsers
+        allUsers.add(user);
+        saveToFile(usersToJSON(allUsers));
+    }
+
     public void isUserExists(User user) throws IOException, ParseException, UserExist {
         MyList<User> list = getAllUsers();
         Optional<User> userOptional = list.getIf((User u) -> u != null && u.username.equals(user.username));

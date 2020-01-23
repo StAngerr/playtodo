@@ -3,9 +3,11 @@ package controllers;
 import com.google.inject.Inject;
 import enums.UserRoles;
 
+import models.Session;
 import models.User;
-import play.api.libs.Files;
+import models.UserIcon;
 import play.cache.AsyncCacheApi;
+import play.libs.Files;
 import play.mvc.Http;
 import play.mvc.Result;
 import services.RequestValidationService;
@@ -15,10 +17,9 @@ import utils.FileManager;
 import utils.HttpHelper;
 import utils.JsonHelper;
 import utils.collections.MyList;
-import utils.errorHandler.InvalidSession;
-import utils.errorHandler.InvalidToken;
-import utils.errorHandler.SessionExpired;
+import utils.errorHandler.UserExist;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -86,16 +87,25 @@ public class UsersController {
     }
 
     public Result saveUserIcon(Http.Request request) {
-//        try {
-//            this.requestValidationService.validateSessionAndUser(request);
-//        } catch (Exception e) {
-//            return badRequest(e.getMessage());
-//        }
-        // File file = request.body().asRaw().asFile();
+        Session session;
+        try {
+            session = this.requestValidationService.validateSessionAndUser(request);
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
         Http.MultipartFormData<Files.TemporaryFile> body = request.body().asMultipartFormData();
         Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = body.getFile("picture");
         String fileName = UUID.randomUUID().toString() + "_" + picture.getFilename();
-        File newFile = FileManager.createFile("\\assets\\" + fileName);
+        String path = "\\public\\assets\\" + fileName;
+        File newFile = FileManager.createFile(path);
+        try {
+            User user = session.getUser();
+            user.setIcon(new UserIcon(path));
+            userService.saveUser(user);
+        } catch (UserExist userExist) {
+            userExist.printStackTrace();
+        }
+
         if (newFile != null) {
             picture.getRef().moveFileTo(newFile, true);
         }
