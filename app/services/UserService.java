@@ -83,10 +83,19 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        MyList<User> allUsers = getAllUsers();
-        allUsers
-        allUsers.add(user);
-        saveToFile(usersToJSON(allUsers));
+        MyList<User> allUsers = null;
+        try {
+            allUsers = getAllUsers();
+            User userToUpdate = allUsers.find((u) -> u.id == user.id);
+            if (userToUpdate != null) {
+                allUsers.updateByIndex(allUsers.indexOf(userToUpdate), user);
+            }
+            saveToFile(usersToJSON(allUsers));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return user;
     }
 
     public void isUserExists(User user) throws IOException, ParseException, UserExist {

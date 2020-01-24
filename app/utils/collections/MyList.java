@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class MyList<T> implements MyListInterface<T> {
@@ -39,10 +40,10 @@ public class MyList<T> implements MyListInterface<T> {
 
     @Override
     public boolean contains(Object o) {
-        for (int i = 0; i <= currentIndex; i++) {
+        for (int i = 0; i < currentIndex; i++) {
             if (o == null && list[i] == null) {
                 return true;
-            } else if (o.equals(list[i])) {
+            } else if (o != null && o.equals(list[i])) {
                 return true;
             }
         }
@@ -56,17 +57,22 @@ public class MyList<T> implements MyListInterface<T> {
 
     @Override
     public void forEach(Consumer<? super T> action) {
-        for (Object item: list) {
-            action.accept((T) item);
+        System.out.println("For each first " + this.size());
+        for (int i = 0; i < currentIndex; i++) {
+            action.accept((T)list[i]);
         }
     }
 
     @Override
-    public Object[] toArray() {
-        return list.clone();
+    public T[] toArray() {
+        Object[] asAr = new Object[currentIndex];
+        for (int i = 0; i < currentIndex; i++) {
+            asAr[i] = list[i];
+        }
+        return (T[]) asAr;
     }
 
-    public boolean add(T o) {
+    public synchronized boolean add(T o) {
         list[currentIndex] = o;
         currentIndex += 1;
         if (list.length - 1 == currentIndex) {
@@ -81,15 +87,24 @@ public class MyList<T> implements MyListInterface<T> {
         return null;
     }
 
-
     @Override
     public boolean remove(Object o) {
+        System.out.println("Remove ethods");
         int index = indexOf(o);
         if (index != -1) {
-            for (int i = index; i < list.length - 1; i++) {
-                list[i] = list[i + 1];
+            synchronized(this) {
+                if (indexOf(o) != -1) {
+                    System.out.println("Removing");
+                    for (int i = index; i < list.length - 1; i++) {
+                        list[i] = list[i + 1];
+                    }
+                    currentIndex--;
+                    return true;
+                } else {
+                    System.out.println("Remove inner else");
+                    return false;
+                }
             }
-            return true;
         }
         return false;
     }
@@ -105,13 +120,19 @@ public class MyList<T> implements MyListInterface<T> {
 
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        c.forEach(item -> add(item));
+        System.out.println("Enter " + list.length + " " + this.size());
+        c.forEach(item -> {
+            add(item);
+        });
+        System.out.println("Exit" + list.length + " " + this.size());
+
         return true;
     }
 
     @Override
     public void clear() {
         list = new Object [list.length];
+        currentIndex = 0;
     }
 
     @Override
@@ -122,29 +143,34 @@ public class MyList<T> implements MyListInterface<T> {
     @Override
     public int hashCode() {
         int sum = 0;
-        for(Object item: list) {
-            sum += item.hashCode();
+        for(int i = 0; i < currentIndex; i++) {
+            sum += list[i].hashCode();
         }
-        return sum + list.length;
+        return sum + currentIndex;
     }
 
     @Override
-    public boolean retainAll(Collection c) {
-        Object[] result = (T[]) new Object[list.length];
+    public synchronized boolean retainAll(Collection c) {
+        Object[] result = (T[]) new Object[c.size()];
         int index = 0;
-        for (Object item : list) {
+        for (Object item : c) {
             if (this.contains(item)) {
                 result[index++] = item;
             }
         }
+        list = result;
+        currentIndex = index;
         return true;
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        c.forEach(o -> {
+        Collection col = c == this ? this.clone() : c;
+        col.forEach(o -> {
             if(this.contains(o)) {
+                // synchronized (this) {
                 remove(o);
+                // }
             }
         });
         return true;
@@ -152,7 +178,7 @@ public class MyList<T> implements MyListInterface<T> {
 
     @Override
     public boolean containsAll(Collection c) {
-        for (Object item : list) {
+        for (Object item: c ) {
             if (!this.contains(item)) {
                 return false;
             }
@@ -192,11 +218,42 @@ public class MyList<T> implements MyListInterface<T> {
         for (int i = 0; i < currentIndex; i++) {
             if (filter.test((T) list[i])) {
                 this.remove(list[i]);
-                currentIndex--;
             }
         }
         return true;
     }
+
+    @Override
+    public T find(Function<T, Boolean> comparator) {
+        for (int i = 0; i < currentIndex; i++) {
+            if (comparator.apply((T) list[i])) {
+                return (T) list[i];
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean updateByIndex(int idx, T data) {
+        if (idx < currentIndex) {
+            list[idx] = data;
+            return true;
+        }
+        return false;
+    }
+
+    public MyList clone(MyList c) {
+        MyList newCollection = new MyList();
+        c.forEach(item -> newCollection.add(item));
+        return newCollection;
+    }
+
+    public MyList clone() {
+        MyList newCollection = new MyList();
+        this.forEach(item -> newCollection.add(item));
+        return newCollection;
+    }
+
 
     private void doubleCollection() {
         int currentLength = list.length;
@@ -226,8 +283,10 @@ public class MyList<T> implements MyListInterface<T> {
         list = expanded;
     }
 
+
+
     @Override
-    public String toString() {
+    public synchronized String toString() {
         StringBuilder res = new StringBuilder();
         int i = 0;
         while(i != currentIndex) {

@@ -98,14 +98,9 @@ public class UsersController {
         String fileName = UUID.randomUUID().toString() + "_" + picture.getFilename();
         String path = "\\public\\assets\\" + fileName;
         File newFile = FileManager.createFile(path);
-        try {
-            User user = session.getUser();
-            user.setIcon(new UserIcon(path));
-            userService.saveUser(user);
-        } catch (UserExist userExist) {
-            userExist.printStackTrace();
-        }
-
+        User user = session.getUser();
+        user.setIcon(new UserIcon(path));
+        userService.updateUser(user);
         if (newFile != null) {
             picture.getRef().moveFileTo(newFile, true);
         }
