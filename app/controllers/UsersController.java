@@ -8,7 +8,6 @@ import models.User;
 import models.UserIcon;
 import play.cache.AsyncCacheApi;
 import play.libs.Files;
-import play.libs.ws.WSClient;
 import play.mvc.Http;
 import play.mvc.Result;
 import services.RequestValidationService;
@@ -32,8 +31,6 @@ public class UsersController {
     private UserService userService;
     private HttpHelper httpHelper;
     private RequestValidationService requestValidationService;
-    @Inject
-    WSClient ws;
 
     @Inject
     public UsersController (AsyncCacheApi cache) {
