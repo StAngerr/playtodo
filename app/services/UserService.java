@@ -86,7 +86,7 @@ public class UserService {
         MyList<User> allUsers = null;
         try {
             allUsers = getAllUsers();
-            User userToUpdate = allUsers.find((u) -> u.id == user.id);
+            User userToUpdate = allUsers.find((u) -> u.id.equals(user.id));
             if (userToUpdate != null) {
                 allUsers.updateByIndex(allUsers.indexOf(userToUpdate), user);
             }

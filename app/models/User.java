@@ -44,7 +44,7 @@ public class User {
         json.put("email", this.email);
         json.put("role", this.role.name());
         if (this.icon != null) {
-            json.put("userIcon", this.icon.asJson().toJSONString());
+            json.put("icon", this.icon.asJson());
         }
         return json;
     }

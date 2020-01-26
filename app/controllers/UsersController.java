@@ -8,6 +8,7 @@ import models.User;
 import models.UserIcon;
 import play.cache.AsyncCacheApi;
 import play.libs.Files;
+import play.libs.ws.WSClient;
 import play.mvc.Http;
 import play.mvc.Result;
 import services.RequestValidationService;
@@ -17,10 +18,9 @@ import utils.FileManager;
 import utils.HttpHelper;
 import utils.JsonHelper;
 import utils.collections.MyList;
-import utils.errorHandler.UserExist;
 
-import javax.swing.*;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -32,6 +32,8 @@ public class UsersController {
     private UserService userService;
     private HttpHelper httpHelper;
     private RequestValidationService requestValidationService;
+    @Inject
+    WSClient ws;
 
     @Inject
     public UsersController (AsyncCacheApi cache) {
@@ -82,8 +84,18 @@ public class UsersController {
         return ok("delete");
     }
 
-    public Result getUserIcon(Http.Request request) {
-        return ok("icon");
+    public Result getUserIcon(Http.Request request) throws UnsupportedEncodingException {
+        Session session;
+        try {
+            session = this.requestValidationService.validateSessionAndUser(request);
+        } catch (Exception e) {
+            return badRequest("User not found.");
+        }
+        if (session.getUser().getIcon() == null) {
+            return badRequest("Image not found.");
+        }
+        String filPath = session.getUser().getIcon().getPath();
+        return  ok(new java.io.File(filPath));
     }
 
     public Result saveUserIcon(Http.Request request) {
@@ -95,6 +107,9 @@ public class UsersController {
         }
         Http.MultipartFormData<Files.TemporaryFile> body = request.body().asMultipartFormData();
         Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = body.getFile("picture");
+        if (picture.getFilename().length() > 50) {
+            return badRequest("File name is too long.");
+        }
         String fileName = UUID.randomUUID().toString() + "_" + picture.getFilename();
         String path = "\\public\\assets\\" + fileName;
         File newFile = FileManager.createFile(path);

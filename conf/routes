@@ -14,4 +14,5 @@ GET     /users/:id                  controllers.UsersController.getUserById(requ
 GET     /users                      controllers.UsersController.getAllUsers(request: Request)
 POST    /users                      controllers.UsersController.createUser(request: Request)
 GET     /users                      controllers.UsersController.getUserIcon(request: Request)
-POST    /users/icon                 controllers.UsersController.saveUserIcon(request: Request)
+POST    /user-icon                  controllers.UsersController.saveUserIcon(request: Request)
+GET     /user-icon                  controllers.UsersController.getUserIcon(request: Request)
