@@ -38,7 +38,7 @@ public class SessionService {
 
     public Session createNewSession(User user) {
         String sessionId = UUID.randomUUID().toString();
-        Session session = new Session(sessionId, user.id);
+        Session session = new Session(sessionId, user.getId());
         try {
             String token = jwtHelper.generateJwt(session.getDataForJwt());
             session.setJwt(token);

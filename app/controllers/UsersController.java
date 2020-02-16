@@ -16,12 +16,13 @@ import services.UserService;
 import utils.FileManager;
 import utils.HttpHelper;
 import utils.JsonHelper;
+import utils.UserIconHelper;
 import utils.collections.MyList;
+import utils.errorHandler.*;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import static play.mvc.Results.badRequest;
 import static play.mvc.Results.ok;
@@ -57,8 +58,8 @@ public class UsersController {
         try {
             this.requestValidationService.validateSessionAndUser(request);
             MyList<User> allUsers = userService.getAllUsers();
-            allUsers.removeIf(user -> user.role == UserRoles.ADMIN);
-            return ok(userService.usersToJSON(allUsers).toJSONString());
+            allUsers.removeIf(user -> user.getRole() == UserRoles.ADMIN);
+            return ok(userService.usersToJSON(allUsers));
         } catch (Exception e) {
             return badRequest(e.getMessage());
         }
@@ -68,9 +69,7 @@ public class UsersController {
         try {
             requestValidationService.validateSessionAndUser(request, new ArrayList<UserRoles>() {{ add(UserRoles.ADMIN); }});
             User createdUser = httpHelper.getUserFromRequest(request);
-            /// move out  this check
-            userService.isUserExists(createdUser);
-            userService.saveUser(createdUser);
+            userService.createUser(createdUser);
             return ok(createdUser.asJson().toJSONString());
         } catch (Exception e) {
             return badRequest(e.getMessage());
@@ -91,8 +90,11 @@ public class UsersController {
         if (session.getUser().getIcon() == null) {
             return badRequest("Image not found.");
         }
-        String filPath = session.getUser().getIcon().getPath();
-        return  ok(new java.io.File(filPath));
+        try {
+            return ok(FileManager.fileToByteArray(session.getUser().getIcon().getPath()));
+        } catch (FileDoesNotExist | ErrorWhileReadingFile e) {
+            return  badRequest(e.getMessage());
+        }
     }
 
     public Result saveUserIcon(Http.Request request) {
@@ -102,20 +104,18 @@ public class UsersController {
         } catch (Exception e) {
             return badRequest(e.getMessage());
         }
-        Http.MultipartFormData<Files.TemporaryFile> body = request.body().asMultipartFormData();
-        Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = body.getFile("picture");
-        if (picture.getFilename().length() > 50) {
-            return badRequest("File name is too long.");
-        }
-        String fileName = UUID.randomUUID().toString() + "_" + picture.getFilename();
-        String path = "\\public\\assets\\" + fileName;
-        File newFile = FileManager.createFile(path);
-        User user = session.getUser();
-        user.setIcon(new UserIcon(path));
-        userService.updateUser(user);
-        if (newFile != null) {
+        Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = UserIconHelper.getIconFromRequest(request, "picture");
+        try {
+            UserIconHelper.validateIconFileName(picture.getFilename());
+            String path = "/public/assets/" + UserIconHelper.generateUserIconFileName(picture.getFilename());
+            File newFile = FileManager.createFile(path);
+            User user = session.getUser();
+            user.setIcon(new UserIcon(path));
+            userService.updateUser(user);
             picture.getRef().moveFileTo(newFile, true);
+            return ok("File uploaded");
+        } catch (FileNameIsToLong | ErrorCreatingFile | UserNotFound | ErrorReadingUserStorage e) {
+            return badRequest(e.getMessage());
         }
-        return ok("File uploaded");
     }
 }

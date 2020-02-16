@@ -41,7 +41,7 @@ public class AuthController {
             User user = userService.getAndValidateUser(loginCredentials);
             Session session = sessionService.createNewSession(user);
             return ok(session.asJson().toJSONString());
-        } catch (UserNotFound |InvalidRequestData | InvalidCredentials | NoCredentials e) {
+        } catch (UserNotFound | InvalidRequestData | InvalidCredentials | NoCredentials | ErrorReadingUserStorage e) {
             return badRequest(e.getMessage());
         }
     }
@@ -54,9 +54,9 @@ public class AuthController {
             ValidationHelper.validateRegistrationCredentials(registrationCredentials);
             User user = new User(registrationCredentials.username, registrationCredentials.password, UserRoles.REGULAR_USER);
             Session session = sessionService.createNewSession(user);
-            userService.saveUser(user);
+            userService.createUser(user);
             return ok(session.getJwt());
-        } catch (InvalidRequestData | InvalidCredentials | UserExist | NoCredentials | PasswordMatch e) {
+        } catch (InvalidRequestData | InvalidCredentials | UserAlreadyExist | NoCredentials | PasswordMatch e) {
             log.error("Register: " + e.getMessage());
             return badRequest(e.getMessage());
         }

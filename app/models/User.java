@@ -1,18 +1,48 @@
 package models;
 
 import enums.UserRoles;
-import net.minidev.json.JSONObject;
+import org.json.simple.JSONObject;
 
 import java.util.UUID;
 
 public class User {
-    public  String id;
-    public  String name;
-    public  int age;
-    public  String username;
-    public  String email;
-    public  String password;
-    public UserRoles role;
+    public String getId() {
+        return id;
+    }
+
+    private  String id;
+
+    public String getName() {
+        return name;
+    }
+
+    private  String name;
+    private  int age;
+
+    public int getAge() {
+        return age;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public UserRoles getRole() {
+        return role;
+    }
+
+    private  String username;
+    private  String email;
+    private  String password;
+    private UserRoles role;
     private UserIcon icon;
 
     private User() {}

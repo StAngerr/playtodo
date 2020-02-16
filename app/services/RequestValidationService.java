@@ -7,7 +7,6 @@ import play.cache.AsyncCacheApi;
 import play.mvc.Http;
 import utils.errorHandler.*;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -30,7 +29,7 @@ public class RequestValidationService {
     }
 
     public Session validateSessionAndUser(Http.Request request) throws SessionExpired, InvalidToken, InvalidSession {
-        Session session = null;
+        Session session;
         try {
             session = sessionService.validateSession(request);
         } catch (ParseException | ExecutionException | InterruptedException e) {
@@ -42,17 +41,15 @@ public class RequestValidationService {
         return session;
     }
 
-    public Session validateSessionAndUser(Http.Request request, List<UserRoles> roles) throws SessionExpired, InvalidToken, NoPermission, UserNotFound, InvalidSession {
+    public Session validateSessionAndUser(Http.Request request, List<UserRoles> roles) throws ErrorReadingUserStorage, SessionExpired, InvalidToken, NoPermission, InvalidSession {
         try {
             Session session = sessionService.validateSession(request);
             User user = userService.getUserById(session.getUserId());
             userService.validatePermissions(user, roles);
             session.setUser(user);
             return session;
-        } catch ( ExecutionException | InterruptedException | ParseException | org.json.simple.parser.ParseException e) {
+        } catch ( ExecutionException | InterruptedException | ParseException e) {
             throw new InvalidSession();
-        } catch (IOException e) {
-            throw new UserNotFound();
         }
     }
 
@@ -63,7 +60,7 @@ public class RequestValidationService {
                 throw new InvalidSession();
             }
             return user;
-        } catch (IOException | org.json.simple.parser.ParseException e) {
+        } catch (ErrorReadingUserStorage e) {
             throw new InvalidSession();
         }
     }
