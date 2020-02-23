@@ -6,10 +6,10 @@ import enums.UserRoles;
 import models.Session;
 import models.User;
 import models.UserIcon;
-import play.cache.AsyncCacheApi;
 import play.libs.Files;
 import play.mvc.Http;
 import play.mvc.Result;
+import repository.AbstractUserIconRepository;
 import services.RequestValidationService;
 import services.SessionService;
 import services.UserService;
@@ -91,7 +91,7 @@ public class UsersController {
             return badRequest("Image not found.");
         }
         try {
-            return ok(FileManager.fileToByteArray(session.getUser().getIcon().getPath()));
+            return ok(AbstractUserIconRepository.getIconRepo(session.getUser().getIcon()).getUserIcon());
         } catch (FileDoesNotExist | ErrorWhileReadingFile e) {
             return  badRequest(e.getMessage());
         }
@@ -104,15 +104,14 @@ public class UsersController {
         } catch (Exception e) {
             return badRequest(e.getMessage());
         }
-        Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = UserIconHelper.getIconFromRequest(request, "picture");
+
         try {
+            Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = UserIconHelper.getIconFromRequest(request, "picture");
             UserIconHelper.validateIconFileName(picture.getFilename());
-            String path = "/public/assets/" + UserIconHelper.generateUserIconFileName(picture.getFilename());
-            File newFile = FileManager.createFile(path);
+            UserIcon icon = AbstractUserIconRepository.getIconRepo(new UserIcon(null, picture.getFilename(), picture.getRef())).setUserIconForUser();
             User user = session.getUser();
-            user.setIcon(new UserIcon(path));
+            user.setIcon(icon);
             userService.updateUser(user);
-            picture.getRef().moveFileTo(newFile, true);
             return ok("File uploaded");
         } catch (FileNameIsToLong | ErrorCreatingFile | UserNotFound | ErrorReadingUserStorage e) {
             return badRequest(e.getMessage());
