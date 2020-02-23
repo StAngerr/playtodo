@@ -1,10 +1,10 @@
 package services;
 
+import com.google.inject.Singleton;
 import enums.UserRoles;
 import models.Credentials;
 import models.User;
 import models.dto.UserDTO;
-import repository.UserRepository;
 import repository.UserRepositoryImpl;
 import utils.JsonHelper;
 import utils.collections.MyList;
@@ -12,28 +12,17 @@ import utils.errorHandler.*;
 
 import java.util.List;
 
+@Singleton
 public class UserService {
-    private static UserService instance;
     private UserRepositoryImpl repo = new UserRepositoryImpl();
-//    @Inject
-//    private UserRepository repo;
-
-    private UserService() {}
-
-    public static UserService getInstance() {
-        if (instance == null) {
-            instance = new UserService();
-        }
-        return instance;
-    }
 
     public User getAndValidateUser(Credentials loginData) throws UserNotFound, InvalidCredentials, ErrorReadingUserStorage {
         User user;
-        user = getUser(loginData.username);
+        user = getUser(loginData.getUsername());
         if (user == null) {
             throw new UserNotFound();
         }
-        if (!user.getPassword().equals(loginData.password)) {
+        if (!user.getPassword().equals(loginData.getPassword())) {
             throw new InvalidCredentials();
         }
         return user;

@@ -34,11 +34,11 @@ public class UsersController {
     private RequestValidationService requestValidationService;
 
     @Inject
-    public UsersController (AsyncCacheApi cache) {
-        this.sessionService = SessionService.getInstance(cache);
-        this.userService = UserService.getInstance();
-        this.httpHelper = HttpHelper.getInstance();
-        this.requestValidationService = RequestValidationService.getInstance(cache);
+    public UsersController (HttpHelper httpHelper, UserService userService, RequestValidationService requestValidationService, SessionService sessionService) {
+        this.sessionService = sessionService;
+        this.userService = userService;
+        this.httpHelper = httpHelper;
+        this.requestValidationService = requestValidationService;
     }
 
     public Result getUserById(Http.Request request, String id) {

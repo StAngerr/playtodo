@@ -13,27 +13,23 @@ import utils.JwtHelper;
 import utils.errorHandler.InvalidToken;
 import utils.errorHandler.SessionExpired;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+@Singleton
 public class SessionService {
-    private static SessionService instance;
     private static CacheManager cacheManager;
     private static JwtHelper jwtHelper;
 
+    @Inject
     private SessionService(AsyncCacheApi cache)  {
         cacheManager = CacheManager.getInstance(cache);
         jwtHelper = JwtHelper.getInstance();
-    }
-
-    public static SessionService getInstance(AsyncCacheApi cache) {
-        if (instance == null) {
-            instance = new SessionService(cache);
-        }
-        return instance;
     }
 
     public Session createNewSession(User user) {
@@ -56,13 +52,13 @@ public class SessionService {
             String token = header.get();
             JWSObject obj =  jwtHelper.parse(token);
             if (obj == null || obj.getPayload().toJSONObject() == null) {
-                throw new InvalidToken();
+                throw new InvalidToken(null);
             }
 
             SessionJwtDTO sessionDTO = parseSessionDto(obj.getPayload().toJSONObject());
 
             if (!cacheManager.isSessionExists(sessionDTO.sessionId)) {
-                throw new InvalidToken();
+                throw new InvalidToken(null);
             }
 
             if (isExpired(sessionDTO.expiration)) {

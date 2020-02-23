@@ -7,25 +7,21 @@ import play.cache.AsyncCacheApi;
 import play.mvc.Http;
 import utils.errorHandler.*;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.text.ParseException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+@Singleton
 public class RequestValidationService {
-    private static RequestValidationService instance;
     private SessionService sessionService;
     private UserService userService;
 
-    private RequestValidationService(AsyncCacheApi cache) {
-        sessionService = SessionService.getInstance(cache);
-        userService = UserService.getInstance();
-    }
-
-    public static RequestValidationService getInstance(AsyncCacheApi cache) {
-        if (instance == null) {
-            instance = new RequestValidationService(cache);
-        }
-        return instance;
+    @Inject
+    private RequestValidationService(UserService userService, SessionService sessionService) {
+        this.sessionService = sessionService;
+        this.userService = userService;
     }
 
     public Session validateSessionAndUser(Http.Request request) throws SessionExpired, InvalidToken, InvalidSession {
@@ -33,7 +29,7 @@ public class RequestValidationService {
         try {
             session = sessionService.validateSession(request);
         } catch (ParseException | ExecutionException | InterruptedException e) {
-            throw new InvalidSession();
+            throw new InvalidSession(e);
         }
         User user =  getAndValidateUser(session.getUserId());
 
@@ -49,7 +45,7 @@ public class RequestValidationService {
             session.setUser(user);
             return session;
         } catch ( ExecutionException | InterruptedException | ParseException e) {
-            throw new InvalidSession();
+            throw new InvalidSession(e);
         }
     }
 
@@ -57,11 +53,11 @@ public class RequestValidationService {
         try {
             User user = userService.getUserById(userId);
             if (user == null) {
-                throw new InvalidSession();
+                throw new InvalidSession(null);
             }
             return user;
         } catch (ErrorReadingUserStorage e) {
-            throw new InvalidSession();
+            throw new InvalidSession(e);
         }
     }
 }

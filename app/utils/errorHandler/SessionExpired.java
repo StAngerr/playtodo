@@ -2,6 +2,6 @@ package utils.errorHandler;
 
 public class SessionExpired extends ErrorHandler {
     public SessionExpired() {
-        super("Session expired.");
+        super("Session expired.", null);
     }
 }

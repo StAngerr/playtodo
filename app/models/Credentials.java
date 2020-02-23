@@ -1,11 +1,10 @@
 package models;
 
 public class Credentials {
-    public String username;
-    public String password;
-    public String confirmPassword;
 
-    public Credentials() {}
+    private String username;
+    private String password;
+    private String confirmPassword;
 
     public Credentials(String username, String password) {
         this.username = username;
@@ -16,6 +15,18 @@ public class Credentials {
         this.username = username;
         this.password = password;
         this.confirmPassword = confirmPassword;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getConfirmPassword() {
+        return confirmPassword;
     }
 
     @Override

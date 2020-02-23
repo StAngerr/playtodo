@@ -7,12 +7,10 @@ import models.Session;
 import models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.cache.AsyncCacheApi;
 import play.mvc.*;
 import services.SessionService;
 import services.UserService;
 import utils.HttpHelper;
-import utils.JwtHelper;
 import utils.ValidationHelper;
 import utils.errorHandler.*;
 
@@ -21,16 +19,14 @@ import static play.mvc.Results.*;
 public class AuthController {
     final Logger log = LoggerFactory.getLogger(this.getClass());
     private HttpHelper httpHelper;
-    private JwtHelper jwtHelper;
     private SessionService sessionService;
     private UserService userService;
 
     @Inject
-    public AuthController(AsyncCacheApi cache) {
-        this.httpHelper = HttpHelper.getInstance();
-        this.jwtHelper = JwtHelper.getInstance();
-        this.sessionService = SessionService.getInstance(cache);
-        this.userService = UserService.getInstance();
+    public AuthController(UserService userService, SessionService sessionService, HttpHelper httpHelper) {
+        this.httpHelper = httpHelper;
+        this.sessionService = sessionService;
+        this.userService = userService;
     }
 
     // returns jwt + current user
@@ -52,7 +48,7 @@ public class AuthController {
         try {
             Credentials registrationCredentials = httpHelper.getRegistrationData(request);
             ValidationHelper.validateRegistrationCredentials(registrationCredentials);
-            User user = new User(registrationCredentials.username, registrationCredentials.password, UserRoles.REGULAR_USER);
+            User user = new User(registrationCredentials.getUsername(), registrationCredentials.getPassword(), UserRoles.REGULAR_USER);
             Session session = sessionService.createNewSession(user);
             userService.createUser(user);
             return ok(session.getJwt());

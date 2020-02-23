@@ -13,7 +13,7 @@ public class FileManager {
         try {
             file.createNewFile();
         } catch (IOException e) {
-            throw new ErrorCreatingFile();
+            throw new ErrorCreatingFile(e);
         }
         return file;
     }
@@ -47,7 +47,7 @@ public class FileManager {
             fileBytes = java.nio.file.Files.readAllBytes( Paths.get(System.getProperty("user.dir") + adoptFilePathToSystem(path)));
             return fileBytes;
         } catch (IOException e) {
-            throw new ErrorWhileReadingFile(path);
+            throw new ErrorWhileReadingFile(path, e);
         }
     }
 

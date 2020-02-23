@@ -13,7 +13,6 @@ import utils.errorHandler.UserNotFound;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 
 public class UserRepositoryImpl implements UserRepository {
     private final String filePath = System.getProperty("user.dir") + File.separator + "data" + File.separator + "users.json";
@@ -71,7 +70,7 @@ public class UserRepositoryImpl implements UserRepository {
             try {
                 FileManager.saveToFile(filePath, usersToJSON(allUsers).toJSONString());
             } catch (IOException e) {
-                throw new ErrorReadingUserStorage();
+                throw new ErrorReadingUserStorage(e);
             }
         } else {
             throw new UserNotFound();
@@ -92,7 +91,7 @@ public class UserRepositoryImpl implements UserRepository {
             JSONParser parser = new JSONParser();
             return (JSONArray) parser.parse(FileManager.readFile(filePath));
         } catch (IOException | ParseException e) {
-            throw new ErrorReadingUserStorage();
+            throw new ErrorReadingUserStorage(e);
         }
     }
 }

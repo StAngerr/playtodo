@@ -8,15 +8,15 @@ import utils.errorHandler.PasswordMatch;
 public class ValidationHelper {
 
     public static void validateLoginCredentials(Credentials creds) throws InvalidCredentials, NoCredentials {
-        validateUsername(creds.username);
-        validatePassword(creds.password);
+        validateUsername(creds.getUsername());
+        validatePassword(creds.getPassword());
     }
 
     public static void validateRegistrationCredentials(Credentials creds) throws InvalidCredentials, NoCredentials, PasswordMatch {
-        validateUsername(creds.username);
-        validatePassword(creds.password);
-        validatePassword(creds.confirmPassword);
-        comparePassword(creds.password, creds.confirmPassword);
+        validateUsername(creds.getUsername());
+        validatePassword(creds.getPassword());
+        validatePassword(creds.getConfirmPassword());
+        comparePassword(creds.getPassword(), creds.getConfirmPassword());
     }
 
     private static void validateUsername(String username) throws InvalidCredentials, NoCredentials {

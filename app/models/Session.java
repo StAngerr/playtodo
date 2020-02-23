@@ -7,14 +7,10 @@ import java.util.Date;
 
 public class Session {
     private String jwt;
-
     private String sessionId;
-
     private String userId;
     private long expiration;
     private User user;
-
-    public Session() { }
 
     public Session(String sessionId, String userId) {
         this.sessionId = sessionId;
@@ -64,7 +60,6 @@ public class Session {
     public void setUser(User user) {
         this.user = user;
     }
-
 
     public String getUserId() {
         return userId;

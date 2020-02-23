@@ -1,7 +1,7 @@
 package utils.errorHandler;
 
 public class InvalidSession extends ErrorHandler {
-    public InvalidSession() {
-        super("Invalid session.");
+    public InvalidSession(Throwable e) {
+        super("Invalid session.", e);
     }
 }

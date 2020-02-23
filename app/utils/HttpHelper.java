@@ -8,17 +8,10 @@ import org.apache.commons.lang3.RandomStringUtils;
 import play.mvc.Http;
 import utils.errorHandler.InvalidRequestData;
 
+import javax.inject.Singleton;
+
+@Singleton
 public class HttpHelper {
-    private static HttpHelper instance;
-
-    private HttpHelper() {}
-
-    public static HttpHelper getInstance() {
-        if (instance == null) {
-            instance = new HttpHelper();
-        }
-        return instance;
-    }
 
     public Credentials getLoginData(Http.Request request) throws InvalidRequestData {
         JsonNode json = request.body().asJson();
