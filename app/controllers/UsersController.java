@@ -9,18 +9,15 @@ import models.UserIcon;
 import play.libs.Files;
 import play.mvc.Http;
 import play.mvc.Result;
-import repository.AbstractUserIconRepository;
+import repository.UserIconRepository;
 import services.RequestValidationService;
-import services.SessionService;
 import services.UserService;
-import utils.FileManager;
 import utils.HttpHelper;
 import utils.JsonHelper;
 import utils.UserIconHelper;
 import utils.collections.MyList;
 import utils.errorHandler.*;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
@@ -28,17 +25,17 @@ import static play.mvc.Results.badRequest;
 import static play.mvc.Results.ok;
 
 public class UsersController {
-    private SessionService sessionService;
     private UserService userService;
     private HttpHelper httpHelper;
     private RequestValidationService requestValidationService;
+    private final UserIconRepository userIconRepository;
 
     @Inject
-    public UsersController (HttpHelper httpHelper, UserService userService, RequestValidationService requestValidationService, SessionService sessionService) {
-        this.sessionService = sessionService;
+    public UsersController (HttpHelper httpHelper, UserService userService, RequestValidationService requestValidationService, UserIconRepository userIconRepository) {
         this.userService = userService;
         this.httpHelper = httpHelper;
         this.requestValidationService = requestValidationService;
+        this.userIconRepository = userIconRepository;
     }
 
     public Result getUserById(Http.Request request, String id) {
@@ -91,7 +88,7 @@ public class UsersController {
             return badRequest("Image not found.");
         }
         try {
-            return ok(AbstractUserIconRepository.getIconRepo(session.getUser().getIcon()).getUserIcon());
+            return ok(userIconRepository.getUserIcon(session.getUser().getIcon()));
         } catch (FileDoesNotExist | ErrorWhileReadingFile e) {
             return  badRequest(e.getMessage());
         }
@@ -108,7 +105,7 @@ public class UsersController {
         try {
             Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = UserIconHelper.getIconFromRequest(request, "picture");
             UserIconHelper.validateIconFileName(picture.getFilename());
-            UserIcon icon = AbstractUserIconRepository.getIconRepo(new UserIcon(null, picture.getFilename(), picture.getRef())).setUserIconForUser();
+            UserIcon icon = userIconRepository.setUserIconForUser(new UserIcon(null, picture.getFilename(), picture.getRef()));
             User user = session.getUser();
             user.setIcon(icon);
             userService.updateUser(user);

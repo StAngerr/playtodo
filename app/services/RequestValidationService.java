@@ -10,6 +10,7 @@ import utils.errorHandler.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.text.ParseException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -24,39 +25,20 @@ public class RequestValidationService {
         this.userService = userService;
     }
 
-    public Session validateSessionAndUser(Http.Request request) throws SessionExpired, InvalidToken, InvalidSession {
-        Session session;
-        try {
-            session = sessionService.validateSession(request);
-        } catch (ParseException | ExecutionException | InterruptedException e) {
-            throw new InvalidSession(e);
-        }
-        User user =  getAndValidateUser(session.getUserId());
-
-        session.setUser(user);
-        return session;
+    public Session validateSessionAndUser(Http.Request request) throws SessionExpired, InvalidToken, NoPermission, InvalidSession {
+        return validateSessionAndUser(request, Collections.emptyList());
     }
 
-    public Session validateSessionAndUser(Http.Request request, List<UserRoles> roles) throws ErrorReadingUserStorage, SessionExpired, InvalidToken, NoPermission, InvalidSession {
+    public Session validateSessionAndUser(Http.Request request, List<UserRoles> roles) throws SessionExpired, InvalidToken, NoPermission, InvalidSession {
         try {
             Session session = sessionService.validateSession(request);
             User user = userService.getUserById(session.getUserId());
-            userService.validatePermissions(user, roles);
+            if (!roles.isEmpty()) {
+                userService.validatePermissions(user, roles);
+            }
             session.setUser(user);
             return session;
-        } catch ( ExecutionException | InterruptedException | ParseException e) {
-            throw new InvalidSession(e);
-        }
-    }
-
-    private User getAndValidateUser(String userId) throws InvalidSession {
-        try {
-            User user = userService.getUserById(userId);
-            if (user == null) {
-                throw new InvalidSession(null);
-            }
-            return user;
-        } catch (ErrorReadingUserStorage e) {
+        } catch ( ExecutionException | InterruptedException | ParseException | ErrorReadingUserStorage e) {
             throw new InvalidSession(e);
         }
     }

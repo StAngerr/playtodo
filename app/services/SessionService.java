@@ -52,13 +52,13 @@ public class SessionService {
             String token = header.get();
             JWSObject obj =  jwtHelper.parse(token);
             if (obj == null || obj.getPayload().toJSONObject() == null) {
-                throw new InvalidToken(null);
+                throw new InvalidToken();
             }
 
             SessionJwtDTO sessionDTO = parseSessionDto(obj.getPayload().toJSONObject());
 
             if (!cacheManager.isSessionExists(sessionDTO.sessionId)) {
-                throw new InvalidToken(null);
+                throw new InvalidToken();
             }
 
             if (isExpired(sessionDTO.expiration)) {

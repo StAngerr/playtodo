@@ -13,6 +13,7 @@ import utils.errorHandler.UserNotFound;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 public class UserRepositoryImpl implements UserRepository {
     private final String filePath = System.getProperty("user.dir") + File.separator + "data" + File.separator + "users.json";
@@ -23,7 +24,10 @@ public class UserRepositoryImpl implements UserRepository {
         JSONArray usersJson = getAllUsersAsJsonArray();
         MyList<User> users = new MyList<>();
         for (Object item : usersJson) {
-            users.add(gson.fromJson(item.toString(), User.class));
+            User user = gson.fromJson(item.toString(), User.class);
+            if (user != null) {
+                users.add(user);
+            }
         }
         return users;
     }
@@ -32,14 +36,14 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User getUserById(String id) throws ErrorReadingUserStorage {
         return getAllUsers()
-                .getIf((User user) -> user != null && user.getId().equals(id))
+                .getIf((user) -> user.getId().equals(id))
                 .orElse(null);
     }
 
     @Override
     public User getUserByUsername(String username) throws ErrorReadingUserStorage {
         return getAllUsers()
-                .getIf((User user) -> user != null && user.getUsername().equals(username))
+                .getIf((user) -> user.getUsername().equals(username))
                 .orElse(null);
     }
 
@@ -48,8 +52,8 @@ public class UserRepositoryImpl implements UserRepository {
         try {
             MyList<User> allUsers = getAllUsers();
             allUsers.add(user);
-            FileManager.saveToFile(filePath, usersToJSON(allUsers).toJSONString());
-        } catch (IOException | ErrorReadingUserStorage e) {
+            saveUsers(allUsers);
+        } catch (ErrorReadingUserStorage e) {
             throw new UserAlreadyExist();
         }
         return null;
@@ -62,28 +66,24 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User updateUser(User user) throws ErrorReadingUserStorage, UserNotFound {
-        MyList<User> allUsers;
-        allUsers = getAllUsers();
+        MyList<User> allUsers = getAllUsers();
         User userToUpdate = allUsers.find((u) -> u.getId().equals(user.getId()));
         if (userToUpdate != null) {
             allUsers.updateByIndex(allUsers.indexOf(userToUpdate), user);
-            try {
-                FileManager.saveToFile(filePath, usersToJSON(allUsers).toJSONString());
-            } catch (IOException e) {
-                throw new ErrorReadingUserStorage(e);
-            }
+            saveUsers(allUsers);
         } else {
             throw new UserNotFound();
         }
         return user;
     }
 
-    public JSONArray usersToJSON(MyList<User> users) {
-        JSONArray result = new JSONArray();
-        for (User user : users) {
-            result.add(user.asJson());
+    private void saveUsers(Collection<User> users) throws ErrorReadingUserStorage {
+        try {
+            Gson gson = new Gson();
+            FileManager.saveToFile(filePath, gson.toJson(users));
+        } catch (IOException e) {
+            throw new ErrorReadingUserStorage(e);
         }
-        return result;
     }
 
     private JSONArray getAllUsersAsJsonArray() throws ErrorReadingUserStorage {

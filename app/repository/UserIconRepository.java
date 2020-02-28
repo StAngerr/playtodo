@@ -6,7 +6,7 @@ import utils.errorHandler.ErrorWhileReadingFile;
 import utils.errorHandler.FileDoesNotExist;
 
 public interface UserIconRepository {
-    public byte[] getUserIcon() throws FileDoesNotExist, ErrorWhileReadingFile;
+    public byte[] getUserIcon(UserIcon icon) throws FileDoesNotExist, ErrorWhileReadingFile;
 
-    public UserIcon setUserIconForUser() throws ErrorCreatingFile;
+    public UserIcon setUserIconForUser(UserIcon icon) throws ErrorCreatingFile;
 }
