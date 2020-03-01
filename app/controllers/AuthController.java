@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.gson.JsonArray;
 import com.google.inject.Inject;
 import enums.UserRoles;
 import models.Credentials;
@@ -23,7 +24,7 @@ public class AuthController {
     private UserService userService;
 
     @Inject
-    public AuthController(UserService userService, SessionService sessionService, HttpHelper httpHelper) {
+    public AuthController(UserService userService, SessionService sessionService, HttpHelper httpHelper ) {
         this.httpHelper = httpHelper;
         this.sessionService = sessionService;
         this.userService = userService;

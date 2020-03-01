@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
-public class UserRepositoryImpl implements UserRepository {
+public class FsUserRepositoryImpl implements UserRepository {
     private final String filePath = System.getProperty("user.dir") + File.separator + "data" + File.separator + "users.json";
 
     @Override

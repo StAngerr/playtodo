@@ -15,6 +15,13 @@ public class User {
     private UserRoles role;
     private UserIcon icon;
 
+    public User(String id, String username, String password, UserRoles role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.id = id;
+    }
+
     public User(String username, String password, UserRoles role) {
         this.username = username;
         this.password = password;

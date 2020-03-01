@@ -14,6 +14,8 @@ val playVersion = "2.6.6"
 libraryDependencies ++= Seq(
   guice,
   ehcache,
+  javaJdbc,
+  "mysql" % "mysql-connector-java" % "8.0.14",
   "org.pac4j" % "play-pac4j" % playPac4jVersion,
   "org.pac4j" % "pac4j-oidc" % pac4jVersion exclude("commons-io" , "commons-io"),
   "org.pac4j" % "pac4j-jwt" % pac4jVersion exclude("commons-io" , "commons-io"),
