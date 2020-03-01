@@ -9,20 +9,15 @@ import utils.errorHandler.FileDoesNotExist;
 
 import java.io.File;
 
-public class UserIconRepositoryImpl implements UserIconRepository {
-    private UserIcon icon;
-
-    public UserIconRepositoryImpl(UserIcon icon) {
-        this.icon = icon;
-    }
+class UserIconRepositoryImpl implements UserIconRepository {
 
     @Override
-    public byte[] getUserIcon() throws FileDoesNotExist, ErrorWhileReadingFile {
+    public byte[] getUserIcon(UserIcon icon) throws FileDoesNotExist, ErrorWhileReadingFile {
         return FileManager.fileToByteArray(icon.getPath());
     }
 
     @Override
-    public UserIcon setUserIconForUser() throws ErrorCreatingFile {
+    public UserIcon setUserIconForUser(UserIcon icon) throws ErrorCreatingFile {
         String path = "/public/assets/" + UserIconHelper.generateUserIconFileName(icon.getFileName());
         File newFile = FileManager.createFile(path);
         icon.setPath(path);

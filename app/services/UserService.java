@@ -1,11 +1,12 @@
 package services;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import enums.UserRoles;
 import models.Credentials;
 import models.User;
 import models.dto.UserDTO;
-import repository.UserRepositoryImpl;
+import repository.UserRepository;
 import utils.JsonHelper;
 import utils.collections.MyList;
 import utils.errorHandler.*;
@@ -14,7 +15,12 @@ import java.util.List;
 
 @Singleton
 public class UserService {
-    private UserRepositoryImpl repo = new UserRepositoryImpl();
+    private final UserRepository repo;
+
+    @Inject
+    public UserService(UserRepository repo) {
+        this.repo = repo;
+    }
 
     public User getAndValidateUser(Credentials loginData) throws UserNotFound, InvalidCredentials, ErrorReadingUserStorage {
         User user;
