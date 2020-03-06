@@ -38,16 +38,16 @@ public class UserRepositoryFactory implements UserRepository {
 
     @Override
     public User createUser(User user) throws UserAlreadyExist {
-        return null;
+        return getUserRepository().createUser(user);
     }
 
     @Override
     public User deleteUser(String id) {
-        return null;
+        return getUserRepository().deleteUser(id);
     }
 
     @Override
     public User updateUser(User user) throws ErrorReadingUserStorage, UserNotFound {
-        return null;
+        return getUserRepository().updateUser(user);
     }
 }

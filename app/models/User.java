@@ -29,13 +29,13 @@ public class User {
         this.id = UUID.randomUUID().toString();
     }
 
-    public User(String username, String password, String email, int age, UserRoles role, String name) {
+    public User(String id, String username, String password, String email, int age, UserRoles role, String name) {
         this.username = username;
         this.password = password;
         this.role = role;
         this.email = email;
         this.age = age;
-        this.id = UUID.randomUUID().toString();
+        this.id = id == null ? UUID.randomUUID().toString() : id;
         this.name = name;
     }
 
@@ -87,5 +87,9 @@ public class User {
 
     public String getUsername() {
         return username;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

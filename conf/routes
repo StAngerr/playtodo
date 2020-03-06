@@ -11,6 +11,8 @@ POST    /register                   controllers.AuthController.register(request:
 
 # User api
 GET     /users/:id                  controllers.UsersController.getUserById(request: Request, id: String)
+DELETE  /users/:id                  controllers.UsersController.deleteUser(request: Request, id: String)
+PUT     /users                      controllers.UsersController.updateUser(request: Request)
 GET     /users                      controllers.UsersController.getAllUsers(request: Request)
 POST    /users                      controllers.UsersController.createUser(request: Request)
 GET     /users                      controllers.UsersController.getUserIcon(request: Request)

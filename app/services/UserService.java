@@ -50,6 +50,10 @@ public class UserService {
         return repo.updateUser(user);
     }
 
+    public User deleteUser(String id) {
+        return repo.deleteUser(id);
+    }
+
     public void checkIfUserExists(User user) throws UserAlreadyExist, ErrorReadingUserStorage {
         User userOptional = repo.getUserByUsername(user.getUsername());
         if (userOptional == null) {

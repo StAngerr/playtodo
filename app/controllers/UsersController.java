@@ -73,8 +73,25 @@ public class UsersController {
         }
     }
 
-    public Result deleteUser() {
-        return ok("delete");
+    public Result updateUser(Http.Request request) {
+        try {
+            requestValidationService.validateSessionAndUser(request, new ArrayList<UserRoles>() {{ add(UserRoles.ADMIN); }});
+            User useToUpdate = httpHelper.getUserFromRequest(request);
+            User updatedUser = userService.updateUser(useToUpdate);
+            return ok(updatedUser != null ? updatedUser.asJson().toJSONString() : null);
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
+    }
+
+    public Result deleteUser(Http.Request request, String id) {
+        try {
+            this.requestValidationService.validateSessionAndUser(request);
+            userService.deleteUser(id);
+            return ok("deleted");
+        } catch (Exception e) {
+            return badRequest(e.getMessage());
+        }
     }
 
     public Result getUserIcon(Http.Request request) throws UnsupportedEncodingException {

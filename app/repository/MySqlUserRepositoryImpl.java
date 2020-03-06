@@ -7,7 +7,6 @@ import play.db.Database;
 import utils.collections.MyList;
 import utils.errorHandler.ErrorReadingUserStorage;
 import utils.errorHandler.UserAlreadyExist;
-import utils.errorHandler.UserNotFound;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -64,20 +63,50 @@ public class MySqlUserRepositoryImpl implements UserRepository {
             ) : null;
         });
     }
-
+// how properly handle errors inside lamda
     @Override
     public User createUser(User user) throws UserAlreadyExist {
-        return null;
+        return db.withConnection(connection -> {
+            ResultSet findUser = connection.prepareStatement("SELECT * FROM users WHERE username=\"" + user.getUsername() + "\";").executeQuery();
+            if (findUser.next()) {
+                // throw new UserAlreadyExist();
+                return null;
+            } else {
+                connection.prepareStatement("INSERT INTO users (username, password, role, age, email) " +
+                        "VALUES (\"" + user.getUsername() + "\",\"" + user.getPassword() + "\",\""
+                        + user.getRole() + "\",\"" + user.getAge() + "\",\"" + user.getEmail() + "\")").executeUpdate();
+                try {
+                    return getUserByUsername(user.getUsername());
+                } catch (ErrorReadingUserStorage errorReadingUserStorage) {
+                    return null;
+                }
+            }
+        });
     }
 
     @Override
     public User deleteUser(String id) {
-        return null;
+         return db.withConnection(connection -> {
+            connection.prepareStatement("DELETE FROM users WHERE id=\"" + id + "\";").executeUpdate();
+            return null;
+        });
     }
 
     @Override
-    public User updateUser(User user) throws ErrorReadingUserStorage, UserNotFound {
-        return null;
+    public User updateUser(User user)  {
+        return db.withConnection(connection -> {
+            connection.prepareStatement("UPDATE users SET " +
+                    "username=\"" + user.getUsername() +"\"," +
+                    "age=\"" + user.getAge() + "\"," +
+                    "email=\"" + user.getEmail() + "\"" +
+                    " WHERE id=\"" + user.getId() + "\";").executeUpdate();
+            try {
+                return getUserById(user.getId());
+            } catch (ErrorReadingUserStorage errorReadingUserStorage) {
+                //errorReadingUserStorage.printStackTrace();
+                return null;
+            }
+        });
     }
 
     private ArrayList<User> resultToJson(ResultSet data) throws SQLException {
